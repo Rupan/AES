@@ -277,7 +277,7 @@ static PyObject *py_aes_reset(aes_AESObject *self)
     return Py_None;
 }
 
-static PyMethodDef aes_AESmethods[] =
+static PyMethodDef aes_AES_methods[] =
 {
     { "encrypt", (PyCFunction)py_aes_encrypt, METH_VARARGS | METH_KEYWORDS, "encrypts a series of blocks" },
     { "decrypt", (PyCFunction)py_aes_decrypt, METH_VARARGS | METH_KEYWORDS, "decrypts a series of blocks" },
@@ -285,7 +285,7 @@ static PyMethodDef aes_AESmethods[] =
     {NULL}  /* Sentinel */
 };
 
-static PyMemberDef aes_members[] =
+static PyMemberDef aes_AES_members[] =
 {
     {NULL}  /* Sentinel */
 };
@@ -396,45 +396,40 @@ static int py_aes_init(aes_AESObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-/* https://docs.python.org/2/c-api/typeobj.html#PyTypeObject.tp_alloc */
+/* See PyType_GenericAlloc and PyTypeObject.tp_alloc */
 static PyObject *secure_alloc(PyTypeObject *type, Py_ssize_t nitems)
 {
-    aes_AESObject *self;
-    size_t required_mem, extra, tmp;
+    PyObject *obj;
+    size_t required_mem;
 
-    required_mem = (size_t)type->tp_basicsize;
-    if(type->tp_itemsize != 0)
-    {
-        extra = Py_SIZE(type) * type->tp_itemsize;
-        /* round up to a multiple of sizeof(void *) */
-        tmp = extra % sizeof(void *);
-        if(tmp > 0)
-            extra += (sizeof(void *) - tmp);
-        required_mem += extra;
-    }
+    required_mem = _PyObject_VAR_SIZE(type, nitems+1);
 #ifdef _MSC_VER
-    if((self = _aligned_malloc(required_mem, 16)) == NULL)
-        return (PyObject *)PyErr_NoMemory();
-    if(VirtualLock(self, required_mem) == 0)
+    if((obj = _aligned_malloc(required_mem, 16)) == NULL)
+        return PyErr_NoMemory();
+    if(VirtualLock(obj, required_mem) == 0)
     {
-        _aligned_free(self);
-        return (PyObject *)PyErr_NoMemory();
+        _aligned_free(obj);
+        return PyErr_NoMemory();
     }
 #else
-    if(posix_memalign((void **)&self, 16, required_mem) != 0)
-        return (PyObject *)PyErr_NoMemory();
-    if(mlock(self, required_mem) != 0)
+    if(posix_memalign((void **)&obj, 16, required_mem) != 0)
+        return PyErr_NoMemory();
+    if(mlock(obj, required_mem) != 0)
     {
-        free(self);
-        return (PyObject *)PyErr_NoMemory();
+        free(obj);
+        return PyErr_NoMemory();
     }
 #endif
 
-    memset(self, 0, required_mem);
-    PyObject_INIT(self, type);
-    return (PyObject *)self;
+    memset(obj, 0, required_mem);
+    if(type->tp_itemsize == 0)
+        PyObject_INIT(obj, type);
+    else
+        PyObject_INIT_VAR((PyVarObject *)obj, type, nitems);
+    return obj;
 }
 
+/* See PyObject_Free */
 void secure_free(void *self)
 {
     memset(self, 0, sizeof(aes_AESObject));
@@ -445,8 +440,6 @@ void secure_free(void *self)
     munlock(self, sizeof(aes_AESObject));
     free(self);
 #endif
-    self = NULL;
-    return;
 }
 
 #if PY_MAJOR_VERSION >= 3
@@ -479,14 +472,14 @@ static PyTypeObject aes_AESType =
     0,                         /*tp_as_buffer */
     Py_TPFLAGS_DEFAULT,        /*tp_flags */
     "AES objects",             /*tp_doc */
-    0,		               /*tp_traverse */
-    0,		               /*tp_clear */
-    0,		               /*tp_richcompare */
-    0,		               /*tp_weaklistoffset */
-    0,		               /*tp_iter */
-    0,		               /*tp_iternext */
-    aes_AESmethods,            /*tp_methods */
-    aes_members,               /*tp_members */
+    0,		                   /*tp_traverse */
+    0,		                   /*tp_clear */
+    0,		                   /*tp_richcompare */
+    0,		                   /*tp_weaklistoffset */
+    0,		                   /*tp_iter */
+    0,		                   /*tp_iternext */
+    aes_AES_methods,           /*tp_methods */
+    aes_AES_members,           /*tp_members */
     0,                         /*tp_getset */
     0,                         /*tp_base */
     0,                         /*tp_dict */
