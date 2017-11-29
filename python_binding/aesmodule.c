@@ -422,6 +422,8 @@ static PyObject *secure_alloc(PyTypeObject *type, Py_ssize_t nitems)
 #endif
 
     memset(obj, 0, required_mem);
+    if (type->tp_flags & Py_TPFLAGS_HEAPTYPE)
+        Py_INCREF(type);
     if(type->tp_itemsize == 0)
         PyObject_INIT(obj, type);
     else
