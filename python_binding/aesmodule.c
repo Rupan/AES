@@ -294,14 +294,12 @@ static int py_aes_init(aes_AESObject *self, PyObject *args, PyObject *kwds)
 {
     size_t mode_len = 0;
     const char *mode = NULL;
-    PyObject *key = NULL;
     Py_buffer key_buf;
-    PyObject *iv = NULL;
     Py_buffer iv_buf;
 
     char *kwlist[] = {"mode", "key", "iv", NULL};
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwds, "sO|O", kwlist, &mode, &key, &iv))
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "ss*|s*", kwlist, &mode, &key_buf, &iv_buf))
     {
         PyErr_SetString(PyExc_ValueError, "Failed to parse arguments");
         return -1;
@@ -338,16 +336,6 @@ static int py_aes_init(aes_AESObject *self, PyObject *args, PyObject *kwds)
     if(self->mode != AES_MODE_ECB)
     {
         /* iv parameter required */
-        if(!PyObject_CheckBuffer(iv))
-        {
-            PyErr_SetString(PyExc_ValueError, "Check failed for IV buffer");
-            return -1;
-        }
-        if(PyObject_GetBuffer(iv, &iv_buf, PyBUF_SIMPLE) < 0)
-        {
-            PyErr_SetString(PyExc_ValueError, "Failed to get IV buffer");
-            return -1;
-        }
         if(iv_buf.len != AES_BLOCK_SIZE) {
             PyBuffer_Release(&iv_buf);
             PyErr_SetString(PyExc_ValueError, "IV/CTR buffer must be 16 bytes long");
@@ -357,18 +345,6 @@ static int py_aes_init(aes_AESObject *self, PyObject *args, PyObject *kwds)
         /* Save a copy of the original IV, for possible reset later */
         memcpy(self->iv_o, iv_buf.buf, AES_BLOCK_SIZE);
         PyBuffer_Release(&iv_buf);
-    }
-
-    if(!PyObject_CheckBuffer(key))
-    {
-        PyErr_SetString(PyExc_ValueError, "Check failed for key buffer");
-        return -1;
-    }
-
-    if(PyObject_GetBuffer(key, &key_buf, PyBUF_SIMPLE) < 0)
-    {
-        PyErr_SetString(PyExc_ValueError, "Failed to get key buffer");
-        return -1;
     }
 
     /* validate key length and initialize encryption / decryption states */
