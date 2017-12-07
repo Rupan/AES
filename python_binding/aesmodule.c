@@ -336,9 +336,18 @@ static int py_aes_init(aes_AESObject *self, PyObject *args, PyObject *kwds)
     if(self->mode != AES_MODE_ECB)
     {
         /* iv parameter required */
-        if(iv_buf.len != AES_BLOCK_SIZE) {
+        if(iv_buf.len != AES_BLOCK_SIZE)
+        {
+            PyBuffer_Release(&key_buf);
             PyBuffer_Release(&iv_buf);
             PyErr_SetString(PyExc_ValueError, "IV/CTR buffer must be 16 bytes long");
+            return -1;
+        }
+        if(iv_buf.ndim != 0)
+        {
+            PyBuffer_Release(&key_buf);
+            PyBuffer_Release(&iv_buf);
+            PyErr_SetString(PyExc_ValueError, "Multi-dimensional arrays are not valid");
             return -1;
         }
         memcpy(self->iv, iv_buf.buf, AES_BLOCK_SIZE);
@@ -348,6 +357,12 @@ static int py_aes_init(aes_AESObject *self, PyObject *args, PyObject *kwds)
     }
 
     /* validate key length and initialize encryption / decryption states */
+    if(key_buf.ndim != 0)
+    {
+        PyBuffer_Release(&key_buf);
+        PyErr_SetString(PyExc_ValueError, "Multi-dimensional arrays are not valid");
+        return -1;
+    }
     switch(key_buf.len)
     {
     case 16:
