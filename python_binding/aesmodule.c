@@ -56,6 +56,7 @@ typedef struct
 {
     PyObject_HEAD
     aes_mode mode;
+    unsigned long long last_perf;
     __declspec(align(16)) aes_encrypt_ctx ectx[1];
     __declspec(align(16)) aes_decrypt_ctx dctx[1];
     __declspec(align(16)) unsigned char iv[AES_BLOCK_SIZE];
@@ -68,6 +69,7 @@ typedef struct
 {
     PyObject_HEAD
     aes_mode mode;
+    unsigned long long last_perf;
     aes_encrypt_ctx ectx[1] __attribute__ ((aligned(16)));
     aes_decrypt_ctx dctx[1] __attribute__ ((aligned(16)));
     unsigned char iv[AES_BLOCK_SIZE] __attribute__ ((aligned(16)));
@@ -103,7 +105,7 @@ static PyObject *py_aes_encrypt(aes_AESObject *self, PyObject *args, PyObject *k
     Py_buffer dbuf;
     AES_RETURN ret = EXIT_FAILURE;
 #if defined( __PROFILE_AES__ )
-    unsigned long long enter = 0, exit = 0;
+    unsigned long long tsc_enter = 0, tsc_exit = 0;
 #endif
 
     char *kwlist[] = {"data", NULL};
@@ -136,7 +138,7 @@ static PyObject *py_aes_encrypt(aes_AESObject *self, PyObject *args, PyObject *k
 
     /* Perform the real encryption operation */
 #if defined( __PROFILE_AES__ )
-    enter = read_tsc();
+    tsc_enter = read_tsc();
 #endif
     switch(mode)
     {
@@ -158,7 +160,7 @@ static PyObject *py_aes_encrypt(aes_AESObject *self, PyObject *args, PyObject *k
         break;
     }
 #if defined( __PROFILE_AES__ )
-    exit = read_tsc();
+    tsc_exit = read_tsc();
 #endif
 
     PyBuffer_Release(&dbuf);
@@ -170,11 +172,10 @@ static PyObject *py_aes_encrypt(aes_AESObject *self, PyObject *args, PyObject *k
     }
 
 #if defined( __PROFILE_AES__ )
-    return PyLong_FromUnsignedLongLong(exit - enter);
-#else
+    self->last_perf = tsc_exit - tsc_enter;
+#endif
     Py_INCREF(Py_None);
     return Py_None;
-#endif
 }
 
 static PyObject *py_aes_decrypt(aes_AESObject *self, PyObject *args, PyObject *kwds)
@@ -184,7 +185,7 @@ static PyObject *py_aes_decrypt(aes_AESObject *self, PyObject *args, PyObject *k
     Py_buffer dbuf;
     AES_RETURN ret = EXIT_FAILURE;
 #if defined( __PROFILE_AES__ )
-    unsigned long long enter = 0, exit = 0;
+    unsigned long long tsc_enter = 0, tsc_exit = 0;
 #endif
 
     char *kwlist[] = {"data", NULL};
@@ -216,7 +217,7 @@ static PyObject *py_aes_decrypt(aes_AESObject *self, PyObject *args, PyObject *k
 
     /* Perform the real encryption operation */
 #if defined( __PROFILE_AES__ )
-    enter = read_tsc();
+    tsc_enter = read_tsc();
 #endif
     switch(mode)
     {
@@ -238,7 +239,7 @@ static PyObject *py_aes_decrypt(aes_AESObject *self, PyObject *args, PyObject *k
         break;
     }
 #if defined( __PROFILE_AES__ )
-    exit = read_tsc();
+    tsc_exit = read_tsc();
 #endif
 
     PyBuffer_Release(&dbuf);
@@ -250,15 +251,15 @@ static PyObject *py_aes_decrypt(aes_AESObject *self, PyObject *args, PyObject *k
     }
 
 #if defined( __PROFILE_AES__ )
-    return PyLong_FromUnsignedLongLong(exit - enter);
-#else
+    self->last_perf = tsc_exit - tsc_enter;
+#endif
     Py_INCREF(Py_None);
     return Py_None;
-#endif
 }
 
 static PyObject *py_aes_reset(aes_AESObject *self)
 {
+    self->last_perf = 0;
     switch(self->mode) {
     case AES_MODE_ECB:
         break;
@@ -287,6 +288,8 @@ static PyMethodDef aes_AES_methods[] =
 
 static PyMemberDef aes_AES_members[] =
 {
+    {"last_perf", T_ULONGLONG, offsetof(aes_AESObject, last_perf), READONLY,
+     "Cycles consumed by the previous operation"},
     {NULL}  /* Sentinel */
 };
 
@@ -305,6 +308,7 @@ static int py_aes_init(aes_AESObject *self, PyObject *args, PyObject *kwds)
         return -1;
     }
 
+    self->last_perf = 0;
     /* determine the operation mode */
     mode_len = strlen(mode);
     if(strncasecmp(mode, "ecb", mode_len) == 0)
