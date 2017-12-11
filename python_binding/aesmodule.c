@@ -174,8 +174,7 @@ static PyObject *py_aes_encrypt(aes_AESObject *self, PyObject *args, PyObject *k
 #if defined( __PROFILE_AES__ )
     self->last_perf = tsc_exit - tsc_enter;
 #endif
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *py_aes_decrypt(aes_AESObject *self, PyObject *args, PyObject *kwds)
@@ -253,8 +252,7 @@ static PyObject *py_aes_decrypt(aes_AESObject *self, PyObject *args, PyObject *k
 #if defined( __PROFILE_AES__ )
     self->last_perf = tsc_exit - tsc_enter;
 #endif
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *py_aes_reset(aes_AESObject *self)
@@ -273,9 +271,7 @@ static PyObject *py_aes_reset(aes_AESObject *self)
         aes_mode_reset(self->ectx);
         break;
     }
-
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyMethodDef aes_AES_methods[] =
