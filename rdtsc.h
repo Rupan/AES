@@ -21,7 +21,7 @@ Issue Date: 20/12/2007
 #ifndef RDTSC_H
 #define RDTSC_H
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && (defined( __x86_64__ ) || defined( __i386__ ))
 
     static inline volatile unsigned long long read_tsc(void)
     {
