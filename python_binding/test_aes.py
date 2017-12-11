@@ -3,14 +3,13 @@ Tests for the AES Python bindings
 """
 
 import re
-import copy
 from aes import AES
 
 
 def _test_ecb(test_vals, test_key):
     for pt_str, ct_str in test_vals:
-        pt_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', pt_str)])
-        ct_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', ct_str)])
+        pt_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', pt_str)]))
+        ct_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', ct_str)]))
         aes_ecb = AES(mode='ecb', key=test_key)
         _tmp_enc = aes_ecb.encrypt(pt_bytes)
         assert _tmp_enc == ct_bytes, "AES ECB mode encryption failure"
@@ -26,7 +25,7 @@ def test_ecb_128():
         Algorithm-Validation-Program/documents/aes/AESAVS.pdf
     Appendix D. VarTxt Known Answer Test Values -- first 10 values from D.1
     """
-    aesavs_d1_key = bytearray((0x00,) * 16)
+    aesavs_d1_key = "".join(map(chr, (0x00,) * 16))
     aesavs_d1_answers = (
         ('80000000000000000000000000000000', '3ad78e726c1ec02b7ebfe92b23d9ec34'),
         ('c0000000000000000000000000000000', 'aae5939c8efdf2f04e60b9fe7117b2c2'),
@@ -50,7 +49,7 @@ def test_ecb_256():
         Algorithm-Validation-Program/documents/aes/AESAVS.pdf
     Appendix D. VarTxt Known Answer Test Values -- first 10 values from D.3
     """
-    aesavs_d3_key = bytearray((0x00,) * 32)
+    aesavs_d3_key = "".join(map(chr, (0x00,) * 32))
     aesavs_d3_answers = (
         ('80000000000000000000000000000000', 'ddc6bf790c15760d8d9aeb6f9a75fd4e'),
         ('c0000000000000000000000000000000', '0a6bdc6d4c1e6280301fd8e97ddbe601'),
@@ -85,10 +84,10 @@ def test_cbc_128_f21():
         '73bed6b8e3c1743b7116e69e22229516'
         '3ff1caa1681fac09120eca307586e1a7'
     )
-    key_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', key_str)])
-    iv_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', iv_str)])
-    pt_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', pt_str)])
-    ct_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', ct_str)])
+    key_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', key_str)]))
+    iv_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', iv_str)]))
+    pt_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', pt_str)]))
+    ct_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', ct_str)]))
     aes_cbc = AES(mode='cbc', key=key_bytes, iv=iv_bytes)
     _tmp_enc = aes_cbc.encrypt(pt_bytes)
     assert _tmp_enc == ct_bytes, "AES CBC mode encryption failure"
@@ -115,10 +114,10 @@ def test_cbc_128_f22():
         '30c81c46a35ce411e5fbc1191a0a52ef'
         'f69f2445df4f9b17ad2b417be66c3710'
     )
-    key_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', key_str)])
-    iv_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', iv_str)])
-    pt_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', pt_str)])
-    ct_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', ct_str)])
+    key_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', key_str)]))
+    iv_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', iv_str)]))
+    pt_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', pt_str)]))
+    ct_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', ct_str)]))
     aes_cbc = AES(mode='cbc', key=key_bytes, iv=iv_bytes)
     _tmp_dec = aes_cbc.decrypt(ct_bytes)
     assert pt_bytes == _tmp_dec, "AES CBC mode encryption failure"
@@ -145,10 +144,10 @@ def test_cfb128_aes192_f315():
         '2e1e8a1dd59b88b1c8e60fed1efac4c9'
         'c05f9f9ca9834fa042ae8fba584b09ff'
     )
-    key_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', key_str)])
-    iv_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', iv_str)])
-    pt_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', pt_str)])
-    ct_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', ct_str)])
+    key_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', key_str)]))
+    iv_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', iv_str)]))
+    pt_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', pt_str)]))
+    ct_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', ct_str)]))
     aes_cfb = AES(mode='cfb', key=key_bytes, iv=iv_bytes)
     _tmp_enc = aes_cfb.encrypt(pt_bytes)
     assert _tmp_enc == ct_bytes, "AES CFB mode encryption failure"
@@ -175,10 +174,10 @@ def test_ofb_aes256_f46():
         '30c81c46a35ce411e5fbc1191a0a52ef'
         'f69f2445df4f9b17ad2b417be66c3710'
     )
-    key_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', key_str)])
-    iv_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', iv_str)])
-    ct_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', ct_str)])
-    pt_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', pt_str)])
+    key_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', key_str)]))
+    iv_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', iv_str)]))
+    ct_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', ct_str)]))
+    pt_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', pt_str)]))
     aes_ofb = AES(mode='ofb', key=key_bytes, iv=iv_bytes)
     _tmp_dec = aes_ofb.decrypt(ct_bytes)
     assert _tmp_dec == pt_bytes, "AES OFB mode encryption failure"
@@ -205,10 +204,10 @@ def test_ctr_aes192_f53():
         '1e36b26bd1ebc670d1bd1d665620abf7'
         '4f78a7f6d29809585a97daec58c6b050'
     )
-    key_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', key_str)])
-    counter_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', counter_str)])
-    pt_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', pt_str)])
-    ct_bytes = bytearray([int(v, 16) for v in re.findall(r'..?', ct_str)])
+    key_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', key_str)]))
+    counter_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', counter_str)]))
+    pt_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', pt_str)]))
+    ct_bytes = "".join(map(chr, [int(v, 16) for v in re.findall(r'..?', ct_str)]))
     aes_ctr = AES(mode='ctr', key=key_bytes, iv=counter_bytes)
     _tmp_enc = aes_ctr.encrypt(pt_bytes)
     assert _tmp_enc == ct_bytes, "AES CTR mode encryption failure"
