@@ -36,7 +36,8 @@ Issue Date: 10/09/2018
 #elif defined( __FreeBSD__ ) || defined( __OpenBSD__ ) || defined( __NetBSD__ )
 #  include <sys/endian.h>
 #elif defined( BSD ) && ( BSD >= 199103 ) || defined( __APPLE__ ) || \
-      defined( __CYGWIN32__ ) || defined( __DJGPP__ ) || defined( __osf__ )
+      defined( __CYGWIN32__ ) || defined( __DJGPP__ ) || defined( __osf__ ) || \
+      defined( HAVE_MACHINE_ENDIAN )
 #  include <machine/endian.h>
 #elif defined( __linux__ ) || defined( __GNUC__ ) || defined( __GNU_LIBRARY__ )
 #  if !defined( __MINGW32__ ) && !defined( _AIX )
