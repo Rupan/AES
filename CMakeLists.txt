@@ -52,43 +52,70 @@ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "${AES64_OPTIMIZED_CPU}")
     endif()
 endif()
 
-add_library(aes SHARED ${LIB_SOURCES})
+add_library(aes_dynamic SHARED ${LIB_SOURCES})
+set_target_properties(aes_dynamic PROPERTIES
+    OUTPUT_NAME aes
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/dynamic"
+)
 if(UNIX AND NOT APPLE)
-    set_target_properties(aes PROPERTIES
+    set_target_properties(aes_dynamic PROPERTIES
         SOVERSION 0
         VERSION ${PROJECT_VERSION}
     )
 endif()
+add_library(aes_static STATIC ${LIB_SOURCES})
+set_target_properties(aes_static PROPERTIES
+    OUTPUT_NAME aes
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/static"
+)
 
-add_executable(aesxam aesxam.c)
-target_link_libraries(aesxam aes)
+add_executable(aesxam_d aesxam.c)
+target_link_libraries(aesxam_d aes_dynamic)
+add_executable(aesxam_s aesxam.c)
+target_link_libraries(aesxam_s aes_static)
 
 add_executable(tablegen tablegen.c aesaux.c)
 
-add_executable(aesgav aesgav.c aesaux.c)
-target_link_libraries(aesgav aes)
+add_executable(aesgav_d aesgav.c aesaux.c)
+target_link_libraries(aesgav_d aes_dynamic)
+add_executable(aesgav_s aesgav.c aesaux.c)
+target_link_libraries(aesgav_s aes_static)
 
-add_executable(aes_avs aes_avs.c aesaux.c)
-target_link_libraries(aes_avs aes)
+add_executable(aes_avs_d aes_avs.c aesaux.c)
+target_link_libraries(aes_avs_d aes_dynamic)
+add_executable(aes_avs_s aes_avs.c aesaux.c)
+target_link_libraries(aes_avs_s aes_static)
 
-add_executable(aesrav aesrav.c aesaux.c)
-target_link_libraries(aesrav aes)
+add_executable(aesrav_d aesrav.c aesaux.c)
+target_link_libraries(aesrav_d aes_dynamic)
+add_executable(aesrav_s aesrav.c aesaux.c)
+target_link_libraries(aesrav_s aes_static)
 
-add_executable(aestst aestst.c)
-target_link_libraries(aestst aes)
+add_executable(aestst_d aestst.c)
+target_link_libraries(aestst_d aes_dynamic)
+add_executable(aestst_s aestst.c)
+target_link_libraries(aestst_s aes_static)
 
-add_executable(rfc3686 rfc3686.c)
-target_link_libraries(rfc3686 aes)
+add_executable(rfc3686_d rfc3686.c)
+target_link_libraries(rfc3686_d aes_dynamic)
+add_executable(rfc3686_s rfc3686.c)
+target_link_libraries(rfc3686_s aes_static)
 
 # Explicit thread to processor binding is not supported on OS X
 if(NOT APPLE)
-    add_executable(aestmr aestmr.c aesaux.c)
-    add_executable(modetest modetest.c aesaux.c)
+    add_executable(aestmr_d aestmr.c aesaux.c)
+    add_executable(modetest_d modetest.c aesaux.c)
+    add_executable(aestmr_s aestmr.c aesaux.c)
+    add_executable(modetest_s modetest.c aesaux.c)
     if(WINDOWS)
-        target_link_libraries(aestmr aes)
-        target_link_libraries(modetest aes)
+        target_link_libraries(aestmr_d aes_dynamic)
+        target_link_libraries(modetest_d aes_dynamic)
+        target_link_libraries(aestmr_s aes_static)
+        target_link_libraries(modetest_s aes_static)
     elseif(UNIX)
-        target_link_libraries(aestmr aes m)
-        target_link_libraries(modetest aes m)
+        target_link_libraries(aestmr_d aes_dynamic m)
+        target_link_libraries(modetest_d aes_dynamic m)
+        target_link_libraries(aestmr_s aes_static m)
+        target_link_libraries(modetest_s aes_static m)
     endif()
 endif()
