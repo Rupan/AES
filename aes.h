@@ -15,7 +15,7 @@ This software is provided 'as is' with no explicit or implied warranties
 in respect of its operation, including, but not limited to, correctness
 and fitness for purpose.
 ---------------------------------------------------------------------------
-Issue Date: 02/08/2018
+Issue Date: 02/09/2018
 
  This file contains the definitions required to use AES in C. See aesopt.h
  for optimisation details.
