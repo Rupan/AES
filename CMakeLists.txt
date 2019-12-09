@@ -10,8 +10,6 @@ if(WIN32)
     set(AES64_OPTIMIZED_CPU "AMD64")
 elseif(UNIX)
     set(AES64_OPTIMIZED_CPU "x86_64")
-else()
-    message(FATAL_ERROR "Unsupported platform.")
 endif()
 
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL "${AES64_OPTIMIZED_CPU}")
@@ -25,16 +23,23 @@ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "${AES64_OPTIMIZED_CPU}")
     endif()
     list(APPEND CMAKE_REQUIRED_INCLUDES "${CMAKE_SOURCE_DIR}")
     # Add AES_NI source code if the define INTEL_AES_POSSIBLE exists in aesopt.h
-    check_symbol_exists(INTEL_AES_POSSIBLE aesopt.h INTEL_AES_POSSIBLE)
-    if(INTEL_AES_POSSIBLE)
+    check_symbol_exists(INTEL_AES_POSSIBLE aesopt.h TARGET_SUPPORTS_AESNI)
+    if(TARGET_SUPPORTS_AESNI)
         list(APPEND LIB_SOURCES aes_ni.c)
     endif()
     # Enable assembly code
     if(WIN32)
-        set(YASM_BIN "C:\\\\Program Files\\\\yasm\\\\yasm.exe")
+        set(YASM_POSSIBLE_PATHS
+            "$ENV{ProgramFiles}/yasm"
+            "$ENV{ProgramFiles}/yasm/bin"
+        )
     else()
-        find_program(YASM_BIN yasm)
+        set(YASM_POSSIBLE_PATHS
+            "$ENV{HOME}/bin"
+            "/usr/local/bin"
+        )
     endif()
+    find_program(YASM_BIN yasm HINTS ${YASM_POSSIBLE_PATHS})
     message(STATUS "YASM path: ${YASM_BIN}")
     set(CMAKE_ASM_NASM_COMPILER "${YASM_BIN}")
     enable_language(ASM_NASM)
@@ -44,7 +49,7 @@ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "${AES64_OPTIMIZED_CPU}")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDLL_EXPORT")
     endif()
     list(APPEND LIB_SOURCES aes_amd64.asm)
-    if(INTEL_AES_POSSIBLE)
+    if(TARGET_SUPPORTS_AESNI)
         set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} -DINTEL_AES_POSSIBLE")
     endif()
     # On UNIX-like systems, use the System V AMD64 ABI
